@@ -1,6 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Image, ListGroup, Card, Button } from "react-bootstrap";
+import {
+  Row,
+  Col,
+  Image,
+  ListGroup,
+  Card,
+  Button,
+  Form,
+} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 
 import Rating from "./../Rating";
@@ -8,7 +16,7 @@ import { getSingleProduct } from "./../../actions/productActions";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import Message from "../ui/Message";
 
-const ProductScreen = ({ match }) => {
+const ProductScreen = ({ history, match }) => {
   const id = match.params.id;
 
   const dispatch = useDispatch();
@@ -17,9 +25,15 @@ const ProductScreen = ({ match }) => {
 
   const { loading, error, product } = productDetails;
 
+  const [qty, setQty] = React.useState(1);
+
   React.useEffect(() => {
     dispatch(getSingleProduct(id));
   }, [id, dispatch]);
+
+  const addToCartHandler = () => {
+    history.push(`/cart/${match.params.id}?qty=${qty}`);
+  };
 
   return (
     <>
@@ -71,11 +85,33 @@ const ProductScreen = ({ match }) => {
                     </Col>
                   </Row>
                 </ListGroup.Item>
+
+                {product.countInStock > 0 && (
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Quantity</Col>
+                      <Col>
+                        <Form.Control
+                          as="select"
+                          value={qty}
+                          onChange={(e) => setQty(e.target.value)}
+                        >
+                          {[...Array(product.countInStock).keys()].map((x) => (
+                            <option key={x + 1}>{x + 1}</option>
+                          ))}
+                        </Form.Control>
+                      </Col>
+                    </Row>
+                  </ListGroup.Item>
+                )}
+
                 <ListGroup.Item>
                   <Button
+                    onClick={addToCartHandler}
                     type="button"
                     disabled={product.countInStock === 0}
                     block
+                    style={{ width: "100%" }}
                   >
                     Add To Cart
                   </Button>
