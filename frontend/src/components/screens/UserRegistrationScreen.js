@@ -7,6 +7,7 @@ import Message from "../ui/Message";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import FormContainer from "../ui/FormContainer";
 import { register } from "../../actions/userActions";
+import { validateEmail } from "../../util";
 
 const UserRegistrationScreen = ({ location, history }) => {
   const [name, setName] = useState("");
@@ -14,6 +15,28 @@ const UserRegistrationScreen = ({ location, history }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(null);
+
+  const [isNameTouched, setIsNameTouched] = useState(false);
+  const [isEmailTouched, setIsEmailTouched] = useState(false);
+  const [isPasswordTouched, setIsPasswordTouched] = useState(false);
+  const [isConfirmPasswordTouched, setIsConfirmPasswordTouched] =
+    useState(false);
+
+  const isEnteredNameInvalid = name.trim() === "" && isNameTouched;
+  const isEnteredEmailInvalid = !validateEmail(email) && isEmailTouched;
+  const isEnteredPasswordInvalid = password.length < 6 && isPasswordTouched;
+  const isEnteredConfirmPasswordInvalid =
+    confirmPassword !== password && isConfirmPasswordTouched;
+
+  let isFormValid = false;
+  if (
+    !isEnteredNameInvalid &&
+    !isEnteredEmailInvalid &&
+    !isEnteredPasswordInvalid &&
+    !isEnteredConfirmPasswordInvalid
+  ) {
+    isFormValid = true;
+  }
 
   const dispatch = useDispatch();
 
@@ -31,12 +54,10 @@ const UserRegistrationScreen = ({ location, history }) => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match");
-    } else {
+    if (isFormValid) {
       dispatch(register(name, email, password));
-      setMessage(null);
+    } else {
+      setMessage("Form is not valid. Please fill in correct information.");
     }
   };
 
@@ -51,44 +72,66 @@ const UserRegistrationScreen = ({ location, history }) => {
           {/* Full name field */}
           <Form.Label>Full Name</Form.Label>
           <Form.Control
+            className={`${isEnteredNameInvalid && "is-invalid"}`}
             type="text"
             placeholder="Enter full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onBlur={() => setIsNameTouched(true)}
           ></Form.Control>
+          {isEnteredNameInvalid && (
+            <div className="invalid-feedback">Name cannot be empty.</div>
+          )}
         </Form.Group>
         {/* Email field */}
         <Form.Group controlId="email">
           <Form.Label>Email</Form.Label>
           <Form.Control
+            className={`${isEnteredEmailInvalid && "is-invalid"}`}
             type="email"
             placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setIsEmailTouched(true)}
           ></Form.Control>
+          {isEnteredEmailInvalid && (
+            <div className="invalid-feedback">Entered email is invalid.</div>
+          )}
         </Form.Group>
         {/* Password field */}
         <Form.Group controlId="password">
           <Form.Label>Password</Form.Label>
           <Form.Control
+            className={`${isEnteredPasswordInvalid && "is-invalid"}`}
             type="password"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setIsPasswordTouched(true)}
           ></Form.Control>
+          {isEnteredPasswordInvalid && (
+            <div className="invalid-feedback">
+              Password must be minimum of 6 characters.
+            </div>
+          )}
         </Form.Group>
         {/* Confirm password field */}
         <Form.Group controlId="confirmPassword">
           <Form.Label>Confirm Password</Form.Label>
           <Form.Control
+            className={`${isEnteredConfirmPasswordInvalid && "is-invalid"}`}
             type="password"
             placeholder="Re-type password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={() => setIsConfirmPasswordTouched(true)}
           ></Form.Control>
+          {isEnteredConfirmPasswordInvalid && (
+            <div className="invalid-feedback">Passwords do not match.</div>
+          )}
         </Form.Group>
         <hr />
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" disabled={!isFormValid}>
           Register
         </Button>
       </Form>
