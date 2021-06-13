@@ -28,6 +28,8 @@ const UserRegistrationScreen = ({ location, history }) => {
   const isEnteredConfirmPasswordInvalid =
     confirmPassword !== password && isConfirmPasswordTouched;
 
+  //Form validation
+
   let isFormValid = false;
   if (
     !isEnteredNameInvalid &&
